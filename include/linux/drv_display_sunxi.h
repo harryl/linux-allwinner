@@ -1,5 +1,5 @@
 /*
- * include/linux/drv_display_sun4i.h
+ * include/linux/drv_display_sunxi.h
  *
  * (C) Copyright 2007-2012
  * Allwinner Technology Co., Ltd. <www.allwinnertech.com>
@@ -42,6 +42,16 @@ typedef enum
     DISP_FORMAT_RGB556      =0x6,
     DISP_FORMAT_ARGB1555    =0x7,
     DISP_FORMAT_RGBA5551    =0x8,
+#ifdef CONFIG_ARCH_SUN3I
+    DISP_FORMAT_RGB888      =0x9,
+    DISP_FORMAT_ARGB8888    =0xa,
+
+    DISP_FORMAT_YUV444      =0xb,
+    DISP_FORMAT_YUV422      =0xc,
+    DISP_FORMAT_YUV420      =0xd,
+    DISP_FORMAT_YUV411      =0xe,
+    DISP_FORMAT_CSIRGB      =0xf,
+#else
     DISP_FORMAT_ARGB888     =0x9,//alpha padding to 0xff
     DISP_FORMAT_ARGB8888    =0xa,
     DISP_FORMAT_RGB888      =0xb,
@@ -52,6 +62,7 @@ typedef enum
     DISP_FORMAT_YUV420      =0x12,
     DISP_FORMAT_YUV411      =0x13,
     DISP_FORMAT_CSIRGB      =0x14,
+#endif
 }__disp_pixel_fmt_t;
 
 
@@ -181,18 +192,33 @@ typedef enum
     DISP_TV_MOD_1080P_24HZ          = 8,
     DISP_TV_MOD_1080P_50HZ          = 9,
     DISP_TV_MOD_1080P_60HZ          = 0xa,
+#ifndef CONFIG_ARCH_SUN3I
     DISP_TV_MOD_1080P_24HZ_3D_FP    = 0x17,
     DISP_TV_MOD_720P_50HZ_3D_FP     = 0x18,
     DISP_TV_MOD_720P_60HZ_3D_FP     = 0x19,
+#endif
     DISP_TV_MOD_PAL                 = 0xb,
     DISP_TV_MOD_PAL_SVIDEO          = 0xc,
+#ifdef CONFIG_ARCH_SUN3I
+    DISP_TV_MOD_PAL_CVBS_SVIDEO     = 0xd,
+#endif
     DISP_TV_MOD_NTSC                = 0xe,
     DISP_TV_MOD_NTSC_SVIDEO         = 0xf,
+#ifdef CONFIG_ARCH_SUN3I
+    DISP_TV_MOD_NTSC_CVBS_SVIDEO    = 0x10,
+#endif
     DISP_TV_MOD_PAL_M               = 0x11,
     DISP_TV_MOD_PAL_M_SVIDEO        = 0x12,
+#ifdef CONFIG_ARCH_SUN3I
+    DISP_TV_MOD_PAL_M_CVBS_SVIDEO   = 0x13,
+#endif
     DISP_TV_MOD_PAL_NC              = 0x14,
     DISP_TV_MOD_PAL_NC_SVIDEO       = 0x15,
+#ifdef CONFIG_ARCH_SUN3I
+    DISP_TV_MOD_PAL_NC_CVBS_SVIDEO  = 0x16,
+#else
     DISP_TV_MODE_NUM               = 0x1a,
+#endif
 }__disp_tv_mode_t;
 
 typedef enum
@@ -219,8 +245,10 @@ typedef enum
     DISP_VGA_H1680_V1050_RB = 8,//not support yet
     DISP_VGA_H1920_V1080_RB = 9,
     DISP_VGA_H1920_V1080    = 0xa,
+#ifndef CONFIG_ARCH_SUN3I
     DISP_VGA_H1280_V720     = 0xb,
     DISP_VGA_MODE_NUM       = 0xc,
+#endif
 }__disp_vga_mode_t;
 
 
@@ -312,15 +340,19 @@ typedef struct
     __disp_pixel_mod_t      mode;
     __bool                  br_swap;    // blue red color swap flag, FALSE:RGB; TRUE:BGR,only used in rgb format
     __disp_cs_mode_t        cs_mode;    //color space
+#ifndef CONFIG_ARCH_SUN3I
     __bool                  b_trd_src; //if 3d source, used for scaler mode layer
     __disp_3d_src_mode_t    trd_mode; //source 3d mode, used for scaler mode layer
     __u32                   trd_right_addr[3];//used when in frame packing 3d mode
+#endif
 }__disp_fb_t;
 
 typedef struct
 {
     __disp_layer_work_mode_t    mode;       //layer work mode
+#ifndef CONFIG_ARCH_SUN3I
     __bool                      b_from_screen;
+#endif
     __u8                        pipe;       //layer pipe,0/1,if in scaler mode, scaler0 must be pipe0, scaler1 must be pipe1
     __u8                        prio;       //layer priority,can get layer prio,but never set layer prio,从底至顶,优先级由低至高
     __bool                      alpha_en;   //layer global alpha enable
@@ -329,8 +361,10 @@ typedef struct
     __disp_rect_t               src_win;    // framebuffer source window,only care x,y if is not scaler mode
     __disp_rect_t               scn_win;    // screen window
     __disp_fb_t                 fb;         //framebuffer
+#ifndef CONFIG_ARCH_SUN3I
     __bool                      b_trd_out;  //if output 3d mode, used for scaler mode layer
     __disp_3d_out_mode_t        out_trd_mode; //output 3d mode, used for scaler mode layer
+#endif
 }__disp_layer_info_t;
 
 typedef struct
@@ -346,7 +380,9 @@ typedef struct
 {
     __s32   id;
     __u32   addr[3];
+#ifndef CONFIG_ARCH_SUN3I
     __u32   addr_right[3];//used when in frame packing 3d mode
+#endif
     __bool  interlace;
     __bool  top_field_first;
     __u32   frame_rate; // *FRAME_RATE_BASE(现在定为1000)
@@ -539,18 +575,21 @@ typedef struct
 {
 	__fb_mode_t                 fb_mode;
 	__disp_layer_work_mode_t    mode;
+#ifndef CONFIG_ARCH_SUN3I
 	__u32                       buffer_num;
+#endif
 	__u32                       width;
 	__u32                       height;
 
+#ifndef CONFIG_ARCH_SUN3I
 	__u32                       output_width;//used when scaler mode
 	__u32                       output_height;//used when scaler mode
 
 	__u32                       primary_screen_id;//used when FB_MODE_DUAL_DIFF_SCREEN_SAME_CONTENTS
 	__u32                       aux_output_width;//used when FB_MODE_DUAL_DIFF_SCREEN_SAME_CONTENTS
 	__u32                       aux_output_height;//used when FB_MODE_DUAL_DIFF_SCREEN_SAME_CONTENTS
+#endif
 
-//maybe not used anymore
 	__u32                       line_length;//in byte unit
 	__u32                       smem_len;
 	__u32                       ch1_offset;//use when PLANAR or UV_COMBINED mode
@@ -609,20 +648,26 @@ typedef enum tag_DISP_CMD
     DISP_CMD_SET_BRIGHT = 0x12,
     DISP_CMD_SET_CONTRAST = 0x13,
     DISP_CMD_SET_SATURATION = 0x14,
+#ifdef CONFIG_ARCH_SUN4I
     DISP_CMD_SET_HUE=0x23,
+#endif
     DISP_CMD_GET_BRIGHT = 0x16,
     DISP_CMD_GET_CONTRAST = 0x17,
     DISP_CMD_GET_SATURATION = 0x18,
+#ifdef CONFIG_ARCH_SUN4I
     DISP_CMD_GET_HUE=0x24,
+#endif
     DISP_CMD_ENHANCE_ON = 0x1a,
     DISP_CMD_ENHANCE_OFF = 0x1b,
     DISP_CMD_GET_ENHANCE_EN = 0x1c,
+#ifndef CONFIG_ARCH_SUN3I
     DISP_CMD_CLK_ON = 0x1d,
     DISP_CMD_CLK_OFF = 0x1e,
     DISP_CMD_SET_SCREEN_SIZE = 0x1f,//when the screen is not used to display(lcd/tv/vga/hdmi) directly, maybe capture the screen and scaler to dram, or as a layer of another screen
     DISP_CMD_CAPTURE_SCREEN = 0x20,//caputre screen and scaler to dram
     DISP_CMD_DE_FLICKER_ON = 0x21,
     DISP_CMD_DE_FLICKER_OFF = 0x22,
+#endif
 
 //----layer----
     DISP_CMD_LAYER_REQUEST = 0x40,
@@ -663,6 +708,7 @@ typedef enum tag_DISP_CMD
     DISP_CMD_LAYER_ENHANCE_ON = 0x63,
     DISP_CMD_LAYER_ENHANCE_OFF = 0x64,
     DISP_CMD_LAYER_GET_ENHANCE_EN = 0x65,
+#ifndef CONFIG_ARCH_SUN3I
     DISP_CMD_LAYER_VPP_ON = 0x67,
     DISP_CMD_LAYER_VPP_OFF = 0x68,
     DISP_CMD_LAYER_GET_VPP_EN = 0x69,
@@ -674,6 +720,7 @@ typedef enum tag_DISP_CMD
     DISP_CMD_LAYER_GET_WHITE_EXTEN_LEVEL = 0x6f,
     DISP_CMD_LAYER_SET_BLACK_EXTEN_LEVEL = 0x70,
     DISP_CMD_LAYER_GET_BLACK_EXTEN_LEVEL = 0x71,
+#endif
 
 //----scaler----
     DISP_CMD_SCALER_REQUEST = 0x80,
@@ -700,11 +747,17 @@ typedef enum tag_DISP_CMD
     DISP_CMD_LCD_OFF = 0x141,
     DISP_CMD_LCD_SET_BRIGHTNESS = 0x142,
     DISP_CMD_LCD_GET_BRIGHTNESS = 0x143,
+#ifdef CONFIG_ARCH_SUN3I
+    DISP_CMD_LCD_SET_COLOR = 0x144,
+    DISP_CMD_LCD_SET_COLOR = 0x145,
+#endif
     DISP_CMD_LCD_CPUIF_XY_SWITCH = 0x146,
     DISP_CMD_LCD_CHECK_OPEN_FINISH = 0x14a,
     DISP_CMD_LCD_CHECK_CLOSE_FINISH = 0x14b,
     DISP_CMD_LCD_SET_SRC = 0x14c,
+#ifndef CONFIG_ARCH_SUN3I
     DISP_CMD_LCD_USER_DEFINED_FUNC = 0x14d,
+#endif
 
 //----tv----
     DISP_CMD_TV_ON = 0x180,
@@ -770,8 +823,10 @@ typedef enum tag_DISP_CMD
 //----framebuffer----
 	DISP_CMD_FB_REQUEST = 0x280,
 	DISP_CMD_FB_RELEASE = 0x281,
+#ifndef CONFIG_ARCH_SUN3I
 	DISP_CMD_FB_GET_PARA = 0x282,
 	DISP_CMD_GET_DISP_INIT_PARA = 0x283,
+#endif
 
 //---for Displayer Test --------
 	DISP_CMD_MEM_REQUEST = 0x2c0,
@@ -779,18 +834,27 @@ typedef enum tag_DISP_CMD
 	DISP_CMD_MEM_GETADR = 0x2c2,
 	DISP_CMD_MEM_SELIDX = 0x2c3,
 
+#ifdef CONFIG_ARCH_SUN3I
+	DISP_CMD_SUSPEND = 0x2d4,
+	DISP_CMD_RESUME = 0x2d5,
+#else
 	DISP_CMD_SUSPEND = 0x2d0,
 	DISP_CMD_RESUME = 0x2d1,
 
 	DISP_CMD_PRINT_REG = 0x2e0,
+#endif
 
 //---pwm --------
     DISP_CMD_PWM_SET_PARA = 0x300,
     DISP_CMD_PWM_GET_PARA = 0x301,
 }__disp_cmd_t;
 
+#ifdef CONFIG_ARCH_SUN3I
+#define FBIOGET_LAYER_HDL 0x4700
+#else
 #define FBIOGET_LAYER_HDL_0 0x4700
 #define FBIOGET_LAYER_HDL_1 0x4701
+#endif
 
 #define FBIO_CLOSE 0x4710
 #define FBIO_OPEN 0x4711

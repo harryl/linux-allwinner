@@ -50,7 +50,7 @@
 #include <linux/cdev.h>
 #include <linux/types.h>
 
-#include <linux/drv_display.h>
+#include <linux/drv_display_sunxi.h>
 #include <linux/drv_hdmi.h>
 
 #if 1

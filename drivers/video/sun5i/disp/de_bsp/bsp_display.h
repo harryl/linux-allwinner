@@ -64,7 +64,7 @@
 
 typedef unsigned int __hdle;
 
-#include <linux/drv_display.h>
+#include <linux/drv_display_sunxi.h>
 #include "../OSAL/OSAL.h"
 
 #if 1
